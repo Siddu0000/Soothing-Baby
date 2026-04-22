@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌙 Baby Soother v3</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&family=Lora:ital,wght@0,400;1,400&display=swap');
+:root{
+  --bg:#0d1117;--sur:#161b22;--sur2:#1c2333;
+  --bor:rgba(255,255,255,0.08);
+  --gold:#c9a97a;--gold2:#a07850;
+  --txt:#e8e0d5;--mut:#8a7a6a;
+  --grn:#4ade80;--red:#f87171;--blue:#60a5fa;--pur:#a78bfa;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
+#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.star{position:absolute;background:#fff;border-radius:50%;animation:twinkle var(--d,3s) ease-in-out infinite alternate}
+@keyframes twinkle{from{opacity:.07;transform:scale(.8)}to{opacity:.5;transform:scale(1.2)}}
+.app{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:2rem 1.25rem 5rem}
+.header{text-align:center;margin-bottom:2.5rem}
+.moon{font-size:54px;display:block;animation:float 5s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-10px) rotate(4deg)}}
+h1{font-family:'Lora',serif;font-size:2.1rem;font-weight:400;color:#f5e6d3;margin-top:.4rem}
+h1 em{color:var(--gold);font-style:italic}
+.tag{font-size:11px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;margin-top:.4rem}
+
+/* Cards */
+.card{background:var(--sur);border:.5px solid var(--bor);border-radius:var(--r);padding:1.4rem;margin-bottom:1.2rem;transition:border-color .3s}
+.card.open{border-color:rgba(201,169,122,.3)}
+.ch{display:flex;align-items:center;gap:10px;margin-bottom:1rem;cursor:pointer;user-select:none}
+.cnum{width:24px;height:24px;border-radius:50%;background:rgba(201,169,122,.12);border:.5px solid rgba(201,169,122,.35);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--gold);flex-shrink:0}
+.ctitle{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);flex:1}
+.cbadge{font-size:11px;color:var(--mut);padding:3px 9px;border-radius:20px;border:.5px solid var(--bor);background:var(--sur2)}
+.cbody{display:block}
+.cbody.hide{display:none}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:50px;border:.5px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:var(--txt);font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap}
+.btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.24)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.33;cursor:not-allowed;pointer-events:none}
+.prim{background:linear-gradient(135deg,var(--gold),var(--gold2));border-color:transparent;color:#1a0e00;font-weight:700}
+.prim:hover{filter:brightness(1.08)}
+.dang{background:rgba(248,113,113,.14);border-color:rgba(248,113,113,.38);color:var(--red)}
+.succ{background:rgba(74,222,128,.11);border-color:rgba(74,222,128,.33);color:var(--grn)}
+.purp{background:rgba(167,139,250,.11);border-color:rgba(167,139,250,.33);color:var(--pur)}
+
+/* Inputs */
+textarea,input[type=text]{width:100%;padding:9px 13px;border-radius:10px;background:rgba(0,0,0,.32);border:.5px solid rgba(255,255,255,.1);color:var(--txt);font-family:'Nunito',sans-serif;font-size:13px;resize:none;transition:border-color .2s;outline:none}
+textarea:focus,input:focus{border-color:rgba(201,169,122,.45)}
+textarea::placeholder,input::placeholder{color:#4a3a2a}
+input[type=range]{flex:1;accent-color:var(--gold);cursor:pointer}
+
+/* Row */
+.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+
+/* Wave canvas */
+.wavebox{height:62px;border-radius:10px;background:rgba(0,0,0,.32);border:.5px solid var(--bor);overflow:hidden;position:relative;margin-bottom:10px}
+#waveCanvas{width:100%;height:100%;display:block}
+.waveidle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;color:#4a3a2a;pointer-events:none}
+
+/* Sample list */
+.slist{display:flex;flex-direction:column;gap:7px;max-height:220px;overflow-y:auto;margin-top:10px}
+.srow{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:10px;background:rgba(201,169,122,.06);border:.5px solid rgba(201,169,122,.16);font-size:12px}
+.srow .slabel{flex:1;color:#d4c4b0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.iBtn{width:28px;height:28px;border-radius:50%;border:.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--txt);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;flex-shrink:0}
+.iBtn:hover{background:rgba(255,255,255,.12)}
+.iBtn.del{color:var(--red)}
+.iBtn.del:hover{background:rgba(248,113,113,.14)}
+
+/* Voice fingerprint badge */
+.fpbadge{display:flex;align-items:center;gap:8px;padding:8px 13px;border-radius:10px;background:rgba(167,139,250,.08);border:.5px solid rgba(167,139,250,.22);font-size:12px;color:var(--pur);margin-top:8px}
+.fpbadge span{color:rgba(167,139,250,.7)}
+
+/* Chips */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9px}
+.chip{font-size:11px;padding:5px 11px;border-radius:20px;border:.5px solid rgba(201,169,122,.28);background:rgba(201,169,122,.07);color:var(--gold);cursor:pointer;transition:all .15s;font-family:'Nunito',sans-serif}
+.chip:hover{background:rgba(201,169,122,.18)}
+
+/* Queue */
+.qlist{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;margin-top:10px}
+.qrow{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:10px;background:rgba(74,222,128,.05);border:.5px solid rgba(74,222,128,.14);font-size:12px;color:#c8e8d8}
+.qrow.playing{border-color:rgba(201,169,122,.4);background:rgba(201,169,122,.09);color:var(--gold)}
+
+/* Progress */
+.progwrap{display:none;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;margin-top:8px}
+.progwrap.vis{display:block}
+.progbar{height:100%;background:var(--gold);border-radius:2px;width:0%;transition:width .35s}
+
+/* Status box */
+.statbox{padding:7px 13px;border-radius:9px;background:rgba(0,0,0,.2);border:.5px solid var(--bor);font-size:12px;color:var(--mut);min-height:30px;margin-top:8px}
+.statbox.ok{color:var(--grn);border-color:rgba(74,222,128,.24)}
+.statbox.err{color:var(--red);border-color:rgba(248,113,113,.24)}
+.statbox.info{color:var(--gold);border-color:rgba(201,169,122,.24)}
+
+/* ML cry panel */
+.cry-panel{display:flex;flex-direction:column;gap:10px}
+.slider-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.slider-lbl{font-size:12px;color:var(--mut);min-width:140px}
+.slider-val{font-size:12px;color:var(--gold);min-width:36px;text-align:right}
+
+.statusline{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:12px;background:rgba(0,0,0,.2);border:.5px solid var(--bor);margin-bottom:10px}
+.dot{width:10px;height:10px;border-radius:50%;background:#3a3a3a;flex-shrink:0;transition:background .3s}
+.dot.listen{background:var(--grn);animation:pg 1.5s ease-in-out infinite}
+.dot.cry{background:var(--red);animation:pr .5s ease-in-out infinite}
+.dot.soothe{background:var(--gold);animation:po 1s ease-in-out infinite}
+@keyframes pg{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.4)}50%{box-shadow:0 0 0 7px rgba(74,222,128,0)}}
+@keyframes pr{0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,.5)}50%{box-shadow:0 0 0 9px rgba(248,113,113,0)}}
+@keyframes po{0%,100%{box-shadow:0 0 0 0 rgba(201,169,122,.4)}50%{box-shadow:0 0 0 7px rgba(201,169,122,0)}}
+.stxt{font-size:13px;color:#b0a090;flex:1}
+.stxt strong{color:var(--txt);font-weight:700}
+
+/* ML probability bars */
+.prob-bars{display:grid;grid-template-columns:80px 1fr 40px;align-items:center;gap:6px 10px;font-size:11px;color:var(--mut);margin-top:6px}
+.ptrack{height:6px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden}
+.pfill{height:100%;border-radius:3px;transition:width .3s}
+.pfill.sil{background:#5a6a7a}
+.pfill.spe{background:var(--blue)}
+.pfill.cry{background:var(--red)}
+
+/* Volume bar */
+.vtrack{flex:0 0 100px;height:8px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden}
+.vfill{height:100%;border-radius:4px;background:var(--grn);transition:width .12s ease,background .3s}
+.vfill.c{background:var(--red)}
+.vpct{font-size:11px;color:var(--mut);min-width:30px;text-align:right}
+
+/* Now playing */
+.nowplay{display:none;align-items:center;gap:13px;padding:13px 15px;border-radius:12px;background:rgba(201,169,122,.07);border:.5px solid rgba(201,169,122,.23);margin-top:10px}
+.nowplay.vis{display:flex}
+.npdisc{font-size:26px;animation:spin 8s linear infinite;flex-shrink:0}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.npinfo{flex:1;min-width:0}
+.nptitle{font-size:13px;font-weight:700;color:#f0e0c8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.npsub{font-size:11px;color:var(--mut);margin-top:2px}
+.npvrow{display:flex;align-items:center;gap:7px;margin-top:6px}
+.npvt{flex:1;height:3px;background:rgba(255,255,255,.1);border-radius:2px}
+.npvf{height:100%;border-radius:2px;background:var(--gold);transition:width .4s;width:100%}
+
+.fadebanner{display:none;align-items:center;gap:8px;padding:7px 13px;border-radius:9px;background:rgba(201,169,122,.09);border:.5px solid rgba(201,169,122,.2);font-size:12px;color:var(--gold);margin-top:6px}
+.fadebanner.vis{display:flex}
+
+.divider{height:.5px;background:var(--bor);margin:.75rem 0}
+.note{font-size:11px;color:var(--mut);padding:7px 12px;border-radius:8px;background:rgba(255,255,255,.02);border:.5px solid var(--bor);margin-bottom:10px;line-height:1.6}
+
+#toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:rgba(201,169,122,.95);color:#1a0e00;padding:9px 20px;border-radius:50px;font-size:13px;font-weight:700;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+audio#hidden{display:none}
+</style>
+</head>
+<body>
+<div id="stars"></div>
+
+<div class="app">
+  <div class="header">
+    <span class="moon">🌙</span>
+    <h1>Baby <em>Soother</em></h1>
+    <p class="tag">ML Cry Detection · Voice Cloning · Auto-fade</p>
+  </div>
+
+  <!-- ═══ CARD 1 · RECORD ══════════════════════════════════════════════════ -->
+  <div class="card open" id="c1">
+    <div class="ch" onclick="tog('c1','b1')">
+      <div class="cnum">1</div>
+      <div class="ctitle">Record Mother's Voice</div>
+      <div class="cbadge" id="b1badge">0 samples</div>
+    </div>
+    <div class="cbody" id="b1">
+      <div class="note">Record <strong>3–5 samples</strong> (5–15 sec each). Speak naturally. Each recording is analysed to extract your pitch and voice warmth — used to adapt the TTS voice toward yours.</div>
+      <div class="wavebox"><canvas id="waveCanvas"></canvas><div class="waveidle" id="waveIdle">🎤 Press Record</div></div>
+      <div class="row" style="margin-bottom:8px">
+        <button class="btn prim" id="recBtn" onclick="toggleRec()">● Record</button>
+        <span id="recTime" style="font-size:12px;color:var(--mut)">0:00</span>
+        <button class="btn" id="saveBtn" onclick="saveSample()" disabled>💾 Save Sample</button>
+        <span style="flex:1"></span>
+        <button class="btn dang" onclick="clearSamples()">🗑 Clear All</button>
+      </div>
+      <!-- Voice fingerprint display -->
+      <div class="fpbadge" id="fpBadge" style="display:none">
+        🎵 Voice analysed — <span id="fpF0">–</span> Hz · <span id="fpBright">–</span> brightness · <span id="fpDur">–</span>s recorded
+      </div>
+      <!-- Sample list -->
+      <div class="slist" id="sampleList"><div style="font-size:12px;color:#4a3a2a;padding:4px">No samples yet.</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ CARD 2 · GENERATE ════════════════════════════════════════════════ -->
+  <div class="card" id="c2">
+    <div class="ch" onclick="tog('c2','b2')">
+      <div class="cnum">2</div>
+      <div class="ctitle">Generate Soothing Phrases</div>
+      <div class="cbadge" id="b2badge">0 phrases</div>
+    </div>
+    <div class="cbody hide" id="b2">
+      <div class="note">
+        Phrases are generated via <strong>Google Neural TTS</strong> (free, no API key). If you have recorded voice samples, the pitch and warmth of the TTS voice is automatically shifted toward your voice's acoustic fingerprint.
+      </div>
+      <div class="chips">
+        <span class="chip" onclick="setP(this.textContent)">Shh, it's okay sweetheart</span>
+        <span class="chip" onclick="setP(this.textContent)">Mama is right here</span>
+        <span class="chip" onclick="setP(this.textContent)">You are safe and loved</span>
+        <span class="chip" onclick="setP(this.textContent)">Hush now little one</span>
+        <span class="chip" onclick="setP(this.textContent)">Sweet dreams, my angel</span>
+        <span class="chip" onclick="setP(this.textContent)">Rest easy, I'm here</span>
+      </div>
+      <textarea id="phraseInput" rows="2" placeholder="Type a soothing phrase…"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button class="btn prim" onclick="genPhrase()">🔊 Generate</button>
+        <button class="btn purp" id="genAllBtn" onclick="genAll()">⚡ Generate All 10 Defaults</button>
+        <span style="flex:1"></span>
+        <button class="btn dang" onclick="clearQueue()">🗑 Clear</button>
+      </div>
+      <div class="progwrap" id="genprog"><div class="progbar" id="genbar"></div></div>
+      <div class="statbox" id="genStat" style="display:none"></div>
+      <div class="qlist" id="queueList"><div style="font-size:12px;color:#4a3a2a;padding:4px">No phrases yet.</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ CARD 3 · ML CRY DETECTION ═══════════════════════════════════════ -->
+  <div class="card" id="c3">
+    <div class="ch" onclick="tog('c3','b3')">
+      <div class="cnum">3</div>
+      <div class="ctitle">ML Cry Detection &amp; Auto-Soothe</div>
+      <div class="cbadge" id="b3badge">Idle</div>
+    </div>
+    <div class="cbody hide" id="b3">
+      <div class="note">
+        The browser sends mic audio to the server every second. A <strong>Random Forest classifier</strong> trained on MFCC + spectral features distinguishes <em>baby crying</em> from speech and silence. When crying is confirmed, soothing plays automatically and fades when the baby calms.
+      </div>
+
+      <div class="slider-row">
+        <span class="slider-lbl">🎯 Cry confidence threshold</span>
+        <input type="range" min="20" max="95" value="55" id="confSlider" oninput="document.getElementById('confVal').textContent=this.value+'%'">
+        <span class="slider-val" id="confVal">55%</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-lbl">🌅 Fade-out duration</span>
+        <input type="range" min="3" max="30" value="10" id="fadeSlider" oninput="document.getElementById('fadeVal').textContent=this.value+'s'">
+        <span class="slider-val" id="fadeVal">10s</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Status + volume -->
+      <div class="statusline">
+        <div class="dot" id="monDot"></div>
+        <div class="stxt" id="monTxt"><strong>Idle</strong> — click Start Monitoring</div>
+        <div class="vtrack"><div class="vfill" id="vfill"></div></div>
+        <div class="vpct" id="vpct">0%</div>
+      </div>
+
+      <!-- ML probability bars -->
+      <div class="prob-bars" id="probBars" style="display:none">
+        <span>Silence</span>
+        <div class="ptrack"><div class="pfill sil" id="pSil" style="width:0%"></div></div>
+        <span id="pSilPct">0%</span>
+        <span>Speech</span>
+        <div class="ptrack"><div class="pfill spe" id="pSpe" style="width:0%"></div></div>
+        <span id="pSpePct">0%</span>
+        <span>Baby cry</span>
+        <div class="ptrack"><div class="pfill cry" id="pCry" style="width:0%"></div></div>
+        <span id="pCryPct">0%</span>
+      </div>
+
+      <div class="row" style="margin-bottom:9px;margin-top:10px">
+        <button class="btn succ" id="monBtn" onclick="toggleMon()">👂 Start Monitoring</button>
+        <button class="btn prim" onclick="manualPlay()">▶ Play Now</button>
+        <button class="btn dang" onclick="manualStop()">⏹ Stop</button>
+      </div>
+      <div class="row" style="margin-bottom:10px">
+        <button class="btn" onclick="simCry()" style="background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.3);color:var(--red)">😢 Simulate Cry</button>
+        <button class="btn" onclick="simCalm()" style="background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.3);color:var(--blue)">😌 Simulate Calm</button>
+      </div>
+
+      <!-- Now playing -->
+      <div class="nowplay" id="nowplay">
+        <div class="npdisc">🌸</div>
+        <div class="npinfo">
+          <div class="nptitle" id="nptitle">Soothing…</div>
+          <div class="npsub">Adapted voice · Auto-fades when calm</div>
+          <div class="npvrow">
+            <span style="font-size:10px;color:var(--mut)">Vol</span>
+            <div class="npvt"><div class="npvf" id="npvf"></div></div>
+            <span style="font-size:10px;color:var(--mut)" id="npvpct">100%</span>
+          </div>
+        </div>
+      </div>
+      <div class="fadebanner" id="fadebanner">🌅 Baby calming — fading out gently…</div>
+
+      <!-- Phrase queue indicator -->
+      <div class="qlist" id="playQueue" style="margin-top:10px"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<audio id="hidden"></audio>
+
+<script>
+// ════════════════════════════════════════════════════════════════════
+// STARS
+// ════════════════════════════════════════════════════════════════════
+;(()=>{const c=document.getElementById('stars');for(let i=0;i<90;i++){const s=document.createElement('div');s.className='star';const z=Math.random()*2+.4;s.style.cssText=`width:${z}px;height:${z}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(2+Math.random()*5).toFixed(1)}s;animation-delay:${(Math.random()*5).toFixed(1)}s`;c.appendChild(s)}})();
+
+// ════════════════════════════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════════════════════════════
+function toast(m,d=2500){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d)}
+function tog(cid,bid){const b=document.getElementById(bid);b.classList.toggle('hide');document.getElementById(cid).classList.toggle('open',!b.classList.contains('hide'))}
+function setStat(id,msg,cls=''){const e=document.getElementById(id);e.style.display='block';e.className='statbox '+cls;e.textContent=msg}
+async function api(url,method='GET',body=null){const o={method,headers:{'Content-Type':'application/json'}};if(body)o.body=JSON.stringify(body);const r=await fetch(url,o);return r.json()}
+function setP(t){document.getElementById('phraseInput').value=t}
+
+// ════════════════════════════════════════════════════════════════════
+// CARD 1 — RECORDING + PLAYBACK
+// ════════════════════════════════════════════════════════════════════
+let mr=null,chunks=[],recBlob=null,isRec=false,recSec=0,recTick=null;
+let actx=null,analyser=null,animF=null,micStream=null;
+const wCanvas=document.getElementById('waveCanvas'),wCtx=wCanvas.getContext('2d'),wIdle=document.getElementById('waveIdle');
+
+async function toggleRec(){
+  if(!isRec){
+    try{
+      micStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+      actx=new(window.AudioContext||window.webkitAudioContext)();
+      analyser=actx.createAnalyser();analyser.fftSize=256;
+      actx.createMediaStreamSource(micStream).connect(analyser);
+      chunks=[];
+      mr=new MediaRecorder(micStream);
+      mr.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};
+      mr.onstop=()=>{recBlob=new Blob(chunks,{type:'audio/webm'});document.getElementById('saveBtn').disabled=false;toast('✅ Recording ready — click 💾 Save')};
+      mr.start(100);isRec=true;
+      wIdle.style.display='none';
+      document.getElementById('recBtn').innerHTML='⏹ Stop';
+      document.getElementById('recBtn').className='btn dang';
+      document.getElementById('saveBtn').disabled=true;
+      recSec=0;recTick=setInterval(()=>{recSec++;const m=Math.floor(recSec/60),s=recSec%60;document.getElementById('recTime').textContent=`${m}:${s.toString().padStart(2,'0')}`},1000);
+      drawWave();
+    }catch(e){toast('❌ Mic access denied')}
+  }else{
+    clearInterval(recTick);mr.stop();cancelAnimationFrame(animF);isRec=false;
+    document.getElementById('recBtn').innerHTML='● Record';
+    document.getElementById('recBtn').className='btn prim';
+  }
+}
+function drawWave(){
+  animF=requestAnimationFrame(drawWave);
+  const buf=new Uint8Array(analyser.frequencyBinCount);analyser.getByteTimeDomainData(buf);
+  const W=wCanvas.width=wCanvas.offsetWidth,H=wCanvas.height=wCanvas.offsetHeight;
+  wCtx.clearRect(0,0,W,H);wCtx.beginPath();
+  wCtx.strokeStyle=isRec?'#c9a97a':'#4ade80';wCtx.lineWidth=2;
+  buf.forEach((v,i)=>{const x=(i/buf.length)*W,y=(v/128-1)*(H/2.2)+H/2;i===0?wCtx.moveTo(x,y):wCtx.lineTo(x,y)});
+  wCtx.stroke();
+}
+async function saveSample(){
+  if(!recBlob)return;
+  document.getElementById('saveBtn').disabled=true;
+  const arr=await recBlob.arrayBuffer();
+  const r=await fetch('/api/samples/upload',{method:'POST',headers:{'Content-Type':'audio/webm'},body:arr});
+  const d=await r.json();
+  if(d.ok){toast(`✅ Sample ${d.count} saved`);recBlob=null;refreshSamples()}
+  else toast('❌ '+d.error);
+}
+async function refreshSamples(){
+  const d=await api('/api/samples/list');
+  document.getElementById('b1badge').textContent=d.samples.length+' samples';
+  const el=document.getElementById('sampleList');
+  if(!d.samples.length){el.innerHTML='<div style="font-size:12px;color:#4a3a2a;padding:4px">No samples yet.</div>';return}
+  el.innerHTML=d.samples.map(s=>`
+    <div class="srow">
+      <button class="iBtn" onclick="playSample('${s.url}')" title="Play">▶</button>
+      <span class="slabel">🎤 ${s.name}</span>
+      <span style="font-size:10px;color:var(--mut)">#${s.idx+1}</span>
+    </div>`).join('');
+  // Show fingerprint
+  const fp=d.fingerprint;
+  if(fp&&fp.mean_f0){
+    document.getElementById('fpBadge').style.display='flex';
+    document.getElementById('fpF0').textContent=Math.round(fp.mean_f0);
+    document.getElementById('fpBright').textContent=fp.brightness?fp.brightness.toFixed(2):'–';
+    document.getElementById('fpDur').textContent=fp.duration_s?fp.duration_s.toFixed(1):'–';
+  }
+}
+function playSample(url){
+  const a=document.getElementById('hidden');a.src=url;a.volume=1;a.play();toast('▶ Playing sample…')
+}
+async function clearSamples(){await api('/api/samples/clear','POST');document.getElementById('fpBadge').style.display='none';toast('Samples cleared');refreshSamples()}
+
+// ════════════════════════════════════════════════════════════════════
+// CARD 2 — PHRASE GENERATION
+// ════════════════════════════════════════════════════════════════════
+let queueData=[];
+async function genPhrase(){
+  const text=document.getElementById('phraseInput').value.trim();
+  if(!text){toast('Enter a phrase first');return}
+  setStat('genStat','⏳ Generating adapted phrase…','info');
+  const d=await api('/api/generate','POST',{text});
+  if(d.ok){setStat('genStat',`✅ "${text.substring(0,55)}"…`,'ok');document.getElementById('phraseInput').value='';refreshQueue();toast('Phrase ready!')}
+  else setStat('genStat','❌ '+d.error,'err');
+}
+async function genAll(){
+  const btn=document.getElementById('genAllBtn');btn.disabled=true;
+  document.getElementById('genprog').classList.add('vis');
+  setStat('genStat','⏳ Generating 10 phrases (30–90 seconds)…','info');
+  let pct=5;const tick=setInterval(()=>{pct=Math.min(pct+3,88);document.getElementById('genbar').style.width=pct+'%'},2500);
+  const d=await api('/api/generate/defaults','POST');
+  clearInterval(tick);document.getElementById('genbar').style.width='100%';btn.disabled=false;
+  setTimeout(()=>document.getElementById('genprog').classList.remove('vis'),1200);
+  if(d.ok){const ok=d.results.filter(r=>r.ok).length;setStat('genStat',`✅ ${ok}/10 phrases ready`,'ok');refreshQueue();toast(`${ok} phrases generated!`)}
+  else setStat('genStat','❌ Failed','err');
+}
+async function refreshQueue(){
+  const d=await api('/api/queue');queueData=d.queue||[];
+  document.getElementById('b2badge').textContent=queueData.length+' phrases';
+  const el=document.getElementById('queueList');
+  if(!queueData.length){el.innerHTML='<div style="font-size:12px;color:#4a3a2a;padding:4px">No phrases yet.</div>';return}
+  el.innerHTML=queueData.map((q,i)=>`
+    <div class="qrow">
+      <button class="iBtn" onclick="previewPhrase('${q.url}')">▶</button>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"${q.text.substring(0,72)}${q.text.length>72?'…':''}"</span>
+    </div>`).join('');
+  renderPlayQueue(curIdx);
+}
+function previewPhrase(url){const a=document.getElementById('hidden');a.src=url;a.volume=1;a.play();toast('▶ Previewing…')}
+async function clearQueue(){await api('/api/queue/clear','POST');queueData=[];stopPlayback();refreshQueue();toast('Queue cleared')}
+
+// ════════════════════════════════════════════════════════════════════
+// CARD 3 — ML CRY DETECTION + PLAYBACK
+// ════════════════════════════════════════════════════════════════════
+let isMonitoring=false,isSoothing=false,isFading=false;
+let cryCount=0,calmCount=0,curIdx=0,curVol=1.0;
+let monStream=null,monActx=null,monAnalyser=null,monProc=null;
+let monTick=null,fadeTick=null;
+let simCrying=false,simCalming=false,simV=0;
+
+const monBtn=document.getElementById('monBtn');
+const monDot=document.getElementById('monDot');
+const monTxt=document.getElementById('monTxt');
+const vfill=document.getElementById('vfill');
+const vpct=document.getElementById('vpct');
+const nowplay=document.getElementById('nowplay');
+const nptitle=document.getElementById('nptitle');
+const fadebanner=document.getElementById('fadebanner');
+const player=document.getElementById('hidden');
+
+const CRY_CONFIRM=2,CALM_CONFIRM=3;   // consecutive windows to confirm state change
+
+async function toggleMon(){
+  if(!isMonitoring){
+    try{
+      monStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+      monActx=new(window.AudioContext||window.webkitAudioContext)({sampleRate:16000});
+      monAnalyser=monActx.createAnalyser();monAnalyser.fftSize=2048;
+      const src=monActx.createMediaStreamSource(monStream);
+      src.connect(monAnalyser);
+      isMonitoring=true;
+      monBtn.textContent='⏹ Stop Monitoring';monBtn.className='btn dang';
+      setDot('listen');monTxt.innerHTML='<strong>Listening…</strong> Analysing with ML';
+      document.getElementById('b3badge').textContent='Listening';
+      document.getElementById('probBars').style.display='grid';
+      monTick=setInterval(monitorStep,1000);
+    }catch(e){toast('❌ Mic access denied')}
+  }else stopMon();
+}
+
+function stopMon(){
+  clearInterval(monTick);if(monStream)monStream.getTracks().forEach(t=>t.stop());
+  isMonitoring=false;simCrying=false;simCalming=false;
+  monBtn.textContent='👂 Start Monitoring';monBtn.className='btn succ';
+  setDot('');vfill.style.width='0%';vpct.textContent='0%';
+  document.getElementById('b3badge').textContent='Idle';
+  document.getElementById('probBars').style.display='none';
+  monTxt.innerHTML='<strong>Idle</strong> — click Start Monitoring';
+}
+
+async function monitorStep(){
+  let pcmB64,volPct;
+
+  if(simCrying){
+    simV=Math.min(simV+7,75+Math.round(Math.random()*15));
+    volPct=simV;
+    // Simulate cry result without actual ML
+    updateProbBars({silence:0.05,speech:0.08,cry:0.87});
+    handlePrediction(true,0.87,volPct);
+    return;
+  }
+  if(simCalming){
+    simV=Math.max(simV-10,3+Math.round(Math.random()*6));
+    volPct=simV;
+    updateProbBars({silence:0.72,speech:0.22,cry:0.06});
+    handlePrediction(false,0.06,volPct);
+    return;
+  }
+
+  // Capture real audio chunk
+  const buf=new Float32Array(monAnalyser.fftSize);
+  monAnalyser.getFloatTimeDomainData(buf);
+
+  // RMS for volume display
+  const rms=Math.sqrt(buf.reduce((s,v)=>s+v*v,0)/buf.length);
+  volPct=Math.round(Math.min(rms*1200,100));
+  setVolBar(volPct,false);
+
+  // Encode as base64 and send to ML server
+  try{
+    const b64=btoa(String.fromCharCode(...new Uint8Array(buf.buffer)));
+    const res=await api('/api/cry/analyze','POST',{pcm_b64:b64,sr:16000});
+    if(res.ok){
+      updateProbBars(res.probabilities);
+      handlePrediction(res.is_crying,res.probabilities.cry,volPct);
+    }
+  }catch(e){/* server busy */}
+}
+
+function handlePrediction(isCrying,cryProb,vol){
+  const thresh=parseInt(document.getElementById('confSlider').value)/100;
+  setVolBar(vol,isCrying&&cryProb>=thresh);
+
+  if(isCrying&&cryProb>=thresh){
+    cryCount++;calmCount=0;
+    if(cryCount>=CRY_CONFIRM&&!isSoothing){
+      isFading=false;curVol=1.0;
+      setDot('cry');monTxt.innerHTML='<strong>😢 Crying detected!</strong> Soothing active…';
+      document.getElementById('b3badge').textContent='Crying';
+      fadebanner.classList.remove('vis');
+      api('/api/cry/event','POST',{crying:true});
+      startPlayback();
+    }
+  }else{
+    calmCount++;cryCount=0;
+    if(calmCount>=CALM_CONFIRM&&isSoothing&&!isFading){
+      isFading=true;
+      setDot('soothe');monTxt.innerHTML='<strong>😌 Calming down</strong> — fading out…';
+      document.getElementById('b3badge').textContent='Calming';
+      fadebanner.classList.add('vis');
+      api('/api/cry/event','POST',{crying:false});
+      startFade();
+    }else if(!isSoothing){
+      setDot('listen');monTxt.innerHTML='<strong>👂 Listening</strong> — no crying';
+      document.getElementById('b3badge').textContent='Listening';
+    }
+  }
+}
+
+function updateProbBars(p){
+  const set=(id,pid,v)=>{document.getElementById(id).style.width=Math.round(v*100)+'%';document.getElementById(pid).textContent=Math.round(v*100)+'%'};
+  set('pSil','pSilPct',p.silence||0);
+  set('pSpe','pSpePct',p.speech||0);
+  set('pCry','pCryPct',p.cry||0);
+}
+
+function setVolBar(pct,cry){vfill.style.width=Math.min(pct,100)+'%';vfill.className='vfill'+(cry?' c':'');vpct.textContent=pct+'%'}
+function setDot(s){monDot.className='dot '+(s==='listen'?'listen':s==='cry'?'cry':s==='soothe'?'soothe':'')}
+
+// ── Playback ──────────────────────────────────────────────────────────────
+function startPlayback(){
+  if(isSoothing||!queueData.length){
+    if(!queueData.length)toast('⚠ Generate phrases first (Step 2)');
+    return;
+  }
+  isSoothing=true;curIdx=0;curVol=1.0;
+  nowplay.classList.add('vis');player.volume=1;
+  playNext();
+}
+function playNext(){
+  if(!isSoothing||!queueData.length)return;
+  const item=queueData[curIdx%queueData.length];curIdx++;
+  nptitle.textContent=`"${item.text.substring(0,58)}${item.text.length>58?'…':''}"`;
+  player.src=item.url;player.play().catch(()=>{});
+  renderPlayQueue((curIdx-1)%queueData.length);
+}
+player.addEventListener('ended',()=>{if(isSoothing)setTimeout(playNext,500)});
+
+function startFade(){
+  const dur=parseInt(document.getElementById('fadeSlider').value)*1000;
+  const t0=Date.now();
+  clearInterval(fadeTick);
+  fadeTick=setInterval(()=>{
+    if(!isFading){clearInterval(fadeTick);return}
+    const f=Math.max(0,1-(Date.now()-t0)/dur);
+    curVol=f;player.volume=f;
+    document.getElementById('npvf').style.width=Math.round(f*100)+'%';
+    document.getElementById('npvpct').textContent=Math.round(f*100)+'%';
+    if(f<=0){clearInterval(fadeTick);stopPlayback()}
+  },200);
+}
+
+function stopPlayback(){
+  isSoothing=false;isFading=false;cryCount=0;calmCount=0;curVol=1;
+  clearInterval(fadeTick);
+  player.pause();player.src='';
+  nowplay.classList.remove('vis');fadebanner.classList.remove('vis');
+  document.getElementById('npvf').style.width='100%';
+  document.getElementById('npvpct').textContent='100%';
+  if(isMonitoring){setDot('listen');monTxt.innerHTML='<strong>👂 Listening</strong> — no crying';document.getElementById('b3badge').textContent='Listening'}
+  else{setDot('');document.getElementById('b3badge').textContent='Idle'}
+}
+
+function renderPlayQueue(active){
+  const el=document.getElementById('playQueue');
+  if(!queueData.length){el.innerHTML='';return}
+  el.innerHTML=queueData.map((q,i)=>`<div class="qrow${i===active?' playing':''}"><div style="width:6px;height:6px;border-radius:50%;background:${i===active?'var(--gold)':'#3a3a3a'};flex-shrink:0"></div><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.text.substring(0,80)}</span></div>`).join('');
+}
+
+function manualPlay(){if(!queueData.length){toast('Generate phrases first (Step 2)');return}startPlayback();toast('▶ Playing…')}
+function manualStop(){stopPlayback();api('/api/soothe/stop','POST');toast('⏹ Stopped')}
+
+function simCry(){
+  simCalming=false;simCrying=true;simV=0;
+  if(!isMonitoring)toggleMon();
+  toast('😢 Simulating cry…');
+}
+function simCalm(){simCrying=false;simCalming=true;toast('😌 Simulating calm…')}
+
+// ════════════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════════════
+refreshSamples();refreshQueue();
+setInterval(()=>{refreshSamples();refreshQueue()},12000);
+</script>
+</body>
+</html>
